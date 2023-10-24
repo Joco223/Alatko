@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.card {
+    @apply bg-orange-50 rounded-lg border-4 border-orange-400 p-3;
+}
+
+.defaultButton {
+    @apply rounded-md bg-orange-400 mr-2 shadow-orang active:translate-x-0.5 active:translate-y-0.5 active:shadow-orangActive hover:bg-orange-300 p-1;
+}
+
+.defaultHeader {
+    @apply text-3xl font-semibold text-orange-400;
+}
+
+.defaultSmallHeader {
+    @apply text-lg font-semibold text-orange-400;
+}
+
+.defaultText {
+    @apply text-orange-400 font-semibold;
+}
+
+.defaultLightText {
+    @apply text-orange-100 font-semibold;
+}
+
+.defaultInput {
+    @apply rounded-md border-2 border-orange-400 caret-orange-400 accent-orange-400 p-1;
+}

@@ -83,22 +83,27 @@
 </script>
 
 <template>
-    <h2>Ovo je prva stranica</h2>
-    <div v-if="loggedIn">
-        <h4>Korisnicko ime: {{ pageUser?.displayName }}</h4>
-        <NuxtLink to="/user/edit" v-if="loggedIn">Izmeni korisnicko ime</NuxtLink><br>
-        <h4>E-Mail: {{ pageUser?.email }}</h4>
-        <h4>E-Mail verifikovan: {{ pageUser?.emailVerified }}</h4>
-        <button @click="logOut" v-if="loggedIn">Log out</button>
-        <br>
-        <br>
-        <br>
-        <input type="file" id="fileElem" accept="image/*" @change="handleFiles(this)">
-        <h5> Upload status - {{ uploadProgress }}%</h5>
-        <img :src="uploadPath" v-if="uploadPath != ''">
-    </div>
-    <div v-else>
-        <NuxtLink to="/user/register">Registruj se</NuxtLink><br>
-        <NuxtLink to="/user/login">Uloguj se</NuxtLink>
+    <div class="grid gap-x-4 gap-y-4 grid-cols-3">
+        <div class="card col-span-2">
+            <h3 class="defaultHeader mb-2">Oglasi</h3>
+        </div>
+        <div class="card col-span-1">
+            <h3 class="defaultHeader mb-2">Vaš profil</h3>
+            <div v-if="loggedIn">
+                <h6 class="defaultSmallHeader mb-1">{{ pageUser?.displayName }}</h6>
+                <NuxtLink to="/user/edit" v-if="loggedIn">
+                    <button class="defaultButton">Izmeni profil</button>
+                </NuxtLink>
+                <button @click="logOut" v-if="loggedIn" class="defaultButton">Log out</button>
+            </div>
+            <div v-else>
+                <NuxtLink to="/user/login">
+                    <button class="defaultButton"><span class="defaultLightText">Uloguj se</span></button>
+                </NuxtLink>
+                <NuxtLink to="/user/register">
+                    <button class="defaultButton"><span class="defaultLightText">Registruj se</span></button>
+                </NuxtLink>
+            </div>
+        </div>
     </div>
 </template>

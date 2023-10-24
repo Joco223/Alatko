@@ -1,19 +1,10 @@
 <script setup>
     import { ref } from 'vue'
-    import { getAuth, updateProfile, onAuthStateChanged, PhoneAuthProvider, updatePhoneNumber, RecaptchaVerifier } from "firebase/auth";
+    import { getAuth, updateProfile, onAuthStateChanged } from "firebase/auth";
     import { getFirestore, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
     const auth = getAuth()
-    const phoneAuth = new PhoneAuthProvider(auth);
     const db = getFirestore();
     auth.languageCode = auth.useDeviceLanguage();
-
-    var appVerifier = new RecaptchaVerifier(auth, 'sign-in-button', {
-        'size': 'invisible',
-        'callback': (response) => {
-            // reCAPTCHA solved, allow signInWithPhoneNumber.
-            onSignInSubmit();
-        }
-    });
 
     var name = ref('')
     var brTel = ref('')
@@ -25,8 +16,8 @@
     onAuthStateChanged(auth, (user) => {
     if (user) {
         name.value = user.displayName;
-        brTel.value = user.phoneNumber;
         userId = user.uid;
+        getUserInfo();
     } else {
         name.value = '';
         brTel.value = '';
@@ -46,30 +37,19 @@
         });
     }
 
-    const updateUserNumber = async() => {
+    const getUserInfo = async() => {
         if (userId != null) {
-            console.log('update user number')
-            phoneAuth.verifyPhoneNumber(brTel.value, appVerifier)
-                .then((verificationId) => {
-                    console.log('verification id', verificationId)
-                    // Once the user enters the verification code, get a PhoneAuthCredential object
-                    const verificationCode = prompt('Ukucajte kod koji je poslat na vas broj telefona');
-                    const credential = phoneAuth.credential(verificationId, verificationCode);
+            const docRef = doc(db, "users", auth.currentUser.uid);
+            const docSnap = await getDoc(docRef);
 
-                    // Update the user's phone number
-                    user.updatePhoneNumber(credential)
-                    .then(() => {
-                        console.log('Phone number updated successfully');
-                    })
-                    .catch((error) => {
-                        console.error('Error updating phone number:', error);
-                    });
-                })
-                .catch((error) => {
-                    console.error('Error sending verification code:', error);
-                });
+            if (docSnap.exists()) {
+                opisText.value = docSnap.data().opis;
+                loc.value = docSnap.data().lokacija;
+                brTel.value = docSnap.data().telefon;
+            }
         }
     }
+
 
     const updateUserInfo = async() => {
         if (userId != null) {
@@ -79,12 +59,14 @@
             if (docSnap.exists()) {
                 await updateDoc(doc(db, "users", auth.currentUser.uid), {
                     opis: opisText.value,
-                    lokacija: loc.value
+                    lokacija: loc.value,
+                    telefon: brTel.value
                 });
             } else {
                 await setDoc(doc(db, "users", auth.currentUser.uid), {
                     opis: opisText.value,
-                    lokacija: loc.value
+                    lokacija: loc.value,
+                    telefon: brTel.value
                 });
             }
         }
@@ -97,7 +79,7 @@
     <input v-model="name" type="text" placeholder="Unesite Vaše ime i prezime"><br>
     <button @click="updateUser">Sacuvaj ime i prezime</button><br>
     <input v-model="brTel" type="text" placeholder="Unesite Vas broj telefona"><br>
-    <button @click="updateUserNumber">Sacuvaj broj telefona</button><br>
+    <button @click="updateUserInfo">Sacuvaj broj telefona</button><br>
     <div>{{ errorMsg }}</div>
 
     <br>
