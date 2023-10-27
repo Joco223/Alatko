@@ -90,11 +90,18 @@
         <div class="card col-span-1">
             <h3 class="defaultHeader mb-2">Vaš profil</h3>
             <div v-if="loggedIn">
-                <h6 class="defaultSmallHeader mb-1">{{ pageUser?.displayName }}</h6>
-                <NuxtLink to="/user/edit" v-if="loggedIn">
-                    <button class="defaultButton">Izmeni profil</button>
+                <div class="grid grid-cols-2 mb-2">
+                    <img v-if="pageUser?.photoURL" :src="pageUser?.photoURL" class="imageCard w-24 h-24" referrerpolicy="no-referrer">
+                    <div class="flex flex-col">
+                        <h6 class="defaultMediumHeader mb-1">{{ pageUser?.displayName }}</h6>
+                    </div>
+                </div>
+                <NuxtLink to="/user/edit" v-if="loggedIn" class="">
+                    <button class="defaultButton"><span class="defaultLightText">Izmeni profil</span></button>
                 </NuxtLink>
-                <button @click="logOut" v-if="loggedIn" class="defaultButton">Log out</button>
+                <button @click="logOut" v-if="loggedIn" class="defaultButton"><span class="defaultLightText">Log out</span></button>
+                <div class="grid grid-cols-2">
+                </div>
             </div>
             <div v-else>
                 <NuxtLink to="/user/login">

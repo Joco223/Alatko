@@ -16,7 +16,7 @@
 </script>
 
 <template>
-    <div class="container items-center flex flex-col">
+    <div class="container items-center flex flex-col mx-auto">
         <div class="w-1/2">
             <h2 class="text-6xl self-start font-bold text-orange-400 mb-6 mt-12">Alatko</h2>
             <NuxtPage/>
