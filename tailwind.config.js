@@ -12,8 +12,11 @@ export default {
     extend: {
       boxShadow: {
         orang: '3px 3px 0px 0px rgba(234, 88, 12, 1)',
-        orangHover: '4px 4px 0px 0px rgba(234, 88, 12, 1)',
-        orangActive: '2px 2px 0px 0px rgba(249, 115, 22, 1)',
+        orangActive: '2px 2px 0px 0px rgba(234, 88, 12, 1)',
+        orangWarning: '3px 3px 0px 0px rgba(172, 79, 15, 1)',
+        orangWarningActive: '2px 2px 0px 0px rgba(172, 79, 15, 1)',
+        green: '3px 3px 0px 0px rgba(110, 176, 80, 1)',
+        greenActive: '2px 2px 0px 0px rgba(110, 176, 80, 1)',
       },
     },
   },

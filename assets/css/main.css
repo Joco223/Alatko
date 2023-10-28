@@ -6,6 +6,14 @@
     @apply bg-orange-50 rounded-lg border-4 border-orange-400 p-3;
 }
 
+.cardSmallPadding {
+    @apply bg-orange-50 rounded-lg border-4 border-orange-400 p-2;
+}
+
+.popupCard {
+    @apply bg-orange-50 rounded-lg border-4 border-orange-400 p-3;
+}
+
 .errorCard {
     @apply bg-orange-100 rounded-lg border-4 border-orange-600 p-3;
 }
@@ -16,6 +24,14 @@
 
 .defaultButton {
     @apply rounded-md bg-orange-400 mr-2 shadow-orang active:translate-x-0.5 active:translate-y-0.5 active:shadow-orangActive hover:bg-orange-300 p-1;
+}
+
+.warningButton {
+    @apply rounded-md bg-orange-600 mr-2 shadow-orangWarning active:translate-x-0.5 active:translate-y-0.5 active:shadow-orangWarningActive hover:bg-orange-500 p-1;
+}
+
+.confirmButton {
+    @apply rounded-md bg-green-400 mr-2 shadow-green active:translate-x-0.5 active:translate-y-0.5 active:shadow-greenActive hover:bg-green-300 p-1;
 }
 
 .defaultHeader {
@@ -40,6 +56,10 @@
 
 .defaultLightText {
     @apply text-orange-100 font-semibold;
+}
+
+.defaultLightGreenText {
+    @apply text-green-100 font-semibold;
 }
 
 .defaultInput {

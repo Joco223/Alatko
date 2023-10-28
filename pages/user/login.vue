@@ -1,15 +1,12 @@
 <script setup>
     import { ref } from 'vue'
-    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, setPersistence, browserSessionPersistence } from "firebase/auth";
+    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
     const auth = getAuth()
-    const provider = new GoogleAuthProvider();
     auth.languageCode = auth.useDeviceLanguage();
 
     const email = ref('')
     const password = ref('')
     var errorMsg = ref('')
-
-    setPersistence(auth, browserSessionPersistence).catch((error) => {console.log(error)})
 
     const logInUser = async() => {
         signInWithEmailAndPassword(auth, email.value, password.value)
@@ -17,33 +14,24 @@
             // Signed in 
             const user = userCredential.user;
             console.log('Log in')
-            console.log(user)
-
             navigateTo('/');
         })
         .catch((error) => {
             const errorCode = error.code;
-            errorMsg = error.message;
+            errorMsg.value = error.message;
             console.log(errorCode, errorMsg)
         });
     }
 
     const logInWithGoogle = async() => {
+        const provider = new GoogleAuthProvider();
         signInWithPopup(auth, provider)
             .then((result) => {
-                // This gives you a Google Access Token. You can use it to access the Google API.
-                const credential = GoogleAuthProvider.credentialFromResult(result);
-                const token = credential.accessToken;
-                // The signed-in user info.
-                const user = result.user;
                 console.log('google log in')
-                console.log(credential)
-                console.log(user)
                 navigateTo('/');
             }).catch((error) => {
-                // Handle Errors here.
                 const errorCode = error.code;
-                errorMsg = error.message;
+                errorMsg.value = error.message;
                 console.log(errorCode, errorMsg)
             });
     }
@@ -89,9 +77,8 @@
                 </NuxtLink>
             </div>
         </div>
-        
-        
     </div>
-
-    
+    <div v-if="errorMsg" class="errorCard mt-2 text-center">
+        <span class="defaultText">Došlo je do greške: {{ errorMsg }}</span>
+    </div>
 </template>

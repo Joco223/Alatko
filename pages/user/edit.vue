@@ -1,6 +1,6 @@
 <script setup>
     import { ref } from 'vue'
-    import { getAuth, updateProfile, onAuthStateChanged, sendEmailVerification } from "firebase/auth";
+    import { getAuth, updateProfile, onAuthStateChanged, sendEmailVerification, reauthenticateWithCredential, EmailAuthProvider, reauthenticateWithPopup, OAuthProvider } from "firebase/auth";
     import { getFirestore, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
     import { getStorage, ref as strRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
     const storage = getStorage();
@@ -18,21 +18,28 @@
     var loc = ref('')
     var userId = null
 
-    var uploadProgress = ref(0)
     var uploadStatus = ref(false)
+
+    var confirmPass = ref(false)
+    var password = ref('')
+    var confirmDelete = ref(false)
 
     onAuthStateChanged(auth, (user) => {
     if (user) {
         name.value = user.displayName;
         email.value = user.email;
-        img.value = user.photoURL;
+        if (user.photoURL == null) {
+            img.value = 'https://dummyimage.com/400/7d7d7d/212121&text=Nema+slike';
+        } else {
+            img.value = user.photoURL;
+        }
         userId = user.uid;
         getUserInfo();
     } else {
         name.value = '';
         brTel.value = '';
         email.value = '';
-        img.value = '';
+        img.value = 'https://dummyimage.com/400/7d7d7d/212121&text=Nema+slike';
         userId = null;
     }
     });
@@ -112,7 +119,6 @@
                 // Observe state change events such as progress, pause, and resume
                 // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
                 var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                uploadProgress.value = progress;
                 switch (snapshot.state) {
                     case 'paused':
                         uploadStatus.value = false;
@@ -156,15 +162,68 @@
                 }, 5000);
             });
     }
+
+
+    const deleteUser = () => {
+        if (auth.currentUser.providerData[0].providerId == 'password') {
+            confirmPass.value = true;
+        }else{
+            var provider = new OAuthProvider(auth.currentUser.providerData[0].providerId);
+            reauthenticateWithPopup(auth.currentUser, provider).then(() => {
+                // User re-authenticated.
+                console.log('reauthenticated')
+                auth.currentUser.delete().then(() => {
+                    // User deleted.
+                    console.log('user deleted')
+                    navigateTo('/')
+                }).catch((error) => {
+                    console.log('error', error)
+                    errorMsg.value = error.code + ' ' + error.message;
+                });
+            }).catch((error) => {
+                console.log('error', error)
+                errorMsg.value = error.code + ' ' + error.message;
+            });
+        }
+        
+    }
+    const verifyDelete = async () => {
+        var credential = EmailAuthProvider.credential(
+            auth.currentUser.email,
+            password.value
+        );
+
+        reauthenticateWithCredential(auth.currentUser, credential).then(() => {
+            auth.currentUser.delete().then(() => {
+                console.log('user deleted')
+                navigateTo('/')
+            }).catch((error) => {
+                console.log('error', error)
+                errorMsg.value = error.code + ' ' + error.message;
+            });
+        }).catch((error) => {
+            console.log('error', error)
+            errorMsg.value = error.code + ' ' + error.message;
+        });
+    }
 </script>
 
 <template>
-    <div class="card">
+    <div v-if="confirmPass" class="card w-1/2 mx-auto">
+        <h3 class="defaultSmallHeader mb-2">Unesite Vašu šifru da bi potvrdili identitet</h3>
+        <div class="flex flex-col mb-2">
+            <label class="defaultText mb-1" for="password">Šifra:</label>
+            <input type="password" class="defaultInput" v-model="password" placeholder="Šifra" autocomplete="confirm-password">
+        </div>
+        <div class="flex justify-between items-center mt-2">
+            <button class="defaultButton" @click="verifyDelete"><span class="defaultLightText">Potvrdi</span></button>
+            <button class="defaultButton" @click="confirmPass = false; password = ''; confirmDelete = false"><span class="defaultLightText">Nazad</span></button>
+        </div>
+    </div>
+    <div v-else class="card">
         <h3 class="defaultHeader mb-2">{{ auth.currentUser?.displayName }}</h3>
         <div class="grid gap-x-3 grid-cols-4">
-            <div class="imageCard w-42 h-44 overflow-hidden">
-                <img v-if="img" :src="img" class="rounded-lg object-center" referrerpolicy="no-referrer">
-            </div>
+            <img :src="img" class="imageCard w-42 h-44 overflow-hidden" referrerpolicy="no-referrer">
             <div class="flex flex-col justify-between col-span-2">
                 <div class="flex flex-col">
                     <span class="defaultText mb-1">E-Mail: {{ auth.currentUser?.email }}</span>
@@ -188,6 +247,20 @@
                     </button>
                     <span class="defaultItalicText">Maksimum 2 MB</span>
                     <input type="file" ref="file" @change="handleFiles"  style="display:none;">
+                </div>
+            </div>
+            <div class="flex flex-col gap-y-2">
+                <button class="defaultButton w-full" @click="sendEmailVer" v-if="!auth.currentUser?.emailVerified"><span class="defaultLightText">Pošalji verifikacioni E-Mail</span></button>
+                <NuxtLink to="/user/changePassword" class="w-full">
+                    <button class="defaultButton w-full"><span class="defaultLightText">Promeni lozinku</span></button>
+                </NuxtLink>
+                <button v-if="!confirmDelete" class="warningButton w-full" @click="confirmDelete = true"><span class="defaultLightText">Obriši nalog</span></button>
+                <div v-else class="flex flex-col">
+                    <span class="defaultText mb-1">Da li ste sigurni?</span>
+                    <div class="grid gap-x-2 grid-cols-2">
+                        <button class="warningButton w-full" @click="deleteUser"><span class="defaultLightText">Obriši</span></button>
+                        <button class="defaultButton w-full" @click="confirmDelete = false"><span class="defaultLightText">Nazad</span></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,7 +293,6 @@
         </label>
         <div class="mt-2">
             <button class="defaultButton" @click="updateAllInfo"><span class="defaultLightText">Sačuvaj izmene</span></button>
-            <button class="defaultButton" @click="sendEmailVer" v-if="!auth.currentUser?.emailVerified"><span class="defaultLightText">Pošalji verifikacioni E-Mail</span></button>
             <NuxtLink to="/" class="float-right">
                 <button class="defaultButton"><span class="defaultLightText">Nazad</span></button>
             </NuxtLink>
@@ -232,7 +304,4 @@
     <div v-else-if="infoMsg" class="card mt-2 text-center">
         <span class="defaultText">{{ infoMsg }}</span>
     </div>
-    <button type="button" className="bg-indigo-500" disabled>
-        
-    </button>
 </template>

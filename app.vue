@@ -1,5 +1,6 @@
 <script setup>
     import { initializeApp } from "firebase/app";
+    import { getAuth, setPersistence, browserSessionPersistence } from "firebase/auth";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBRBLnKvsCP8WtkaXXqWfg9nvwzePRZjt4",
@@ -13,6 +14,10 @@
     
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth()
+
+    await setPersistence(auth, browserSessionPersistence).catch((error) => {console.log(error)})
+
 </script>
 
 <template>
