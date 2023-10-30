@@ -53,10 +53,10 @@
                     var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                     switch (snapshot.state) {
                         case 'paused':
-                            uploadStatus.value = false;
+                            uploadImagesStatus.value = false;
                             break;
                         case 'running':
-                            uploadStatus.value = true;
+                            uploadImagesStatus.value = true;
                             break;
                     }
                 },
@@ -89,7 +89,7 @@
             return;
         }
 
-        var storageRef = strRef(storage, 'userImages/' + auth.currentUser.uid);
+        var storageRef = strRef(storage, 'oglasImages/' + auth.currentUser.uid);
         var uploadTask = uploadBytesResumable(storageRef, file);
 
         uploadTask.on('state_changed',
@@ -110,22 +110,10 @@
                 console.log(error.message)
             },
             () => {
-                // Handle successful uploads on complete
-                // For instance, get the download URL: https://firebasestorage.googleapis.com/...
                 uploadStatus.value = false;
                 getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                     console.log('File available at', downloadURL);
-                    img.value = downloadURL;
-
-                    if (userId != null) {
-                        updateProfile(auth.currentUser, {
-                            photoURL: downloadURL
-                        }).then(async () => {
-                            console.log('Image update successful')
-                        }).catch((error) => {
-                            errorMsg = error.message;
-                        });
-                    }
+                    mainImg.value = downloadURL;
                 });
             }
         );
