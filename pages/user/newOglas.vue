@@ -37,8 +37,8 @@
 
     onMounted(() => {
         var sel = document.getElementById('kategorijaSelect');
-        izabranaKat.value = sel.options[0];
-        console.log('1')
+        izabranaKat.value = sel.options[0].value;
+        console.log(izabranaKat.value)
     })
 
     console.log(kategorija)
@@ -181,7 +181,7 @@
             <label class="flex flex-col">
                 <span class="defaultText">Kategorija:</span>
                 <select class="defaultInput" id="kategorijaSelect" v-model="izabranaKat">
-                    <option :value="null" disabled selected>Izaberite kategoriju</option>
+                    <option value="null" disabled selected>Izaberite kategoriju</option>
                     <option v-for="(val, key) in kategorija" :key="val" :value="val">{{ key }}</option>
                 </select>
             </label>

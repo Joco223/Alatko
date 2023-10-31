@@ -155,15 +155,17 @@
         </div>
         <!-- Prikaži oglase -->
         <div class="col-span-2">
-            <div v-for="oglas in oglasi" :key="oglas.id" class="cardSmallPadding" style="width: 100%;">
+            <div v-for="oglas in oglasi" :key="oglas.id" class="cardSmallPadding mb-2" style="width: 100%;">
                 <NuxtLink :to="'/oglas/' + oglas.id" class="grid gap-x-2 grid-cols-3">
-                    <img :src="oglas.slika" class="imageCard col-span-1 w-full h-36" referrerpolicy="no-referrer">
+                    <img :src="oglas.slika" class="imageCard col-span-1 w-full h-full min-h-32" referrerpolicy="no-referrer">
                     <div class="flex flex-col col-span-2">
                         <span class="defaultHeader mb-1">{{ oglas.naziv }}</span>
                         <span class="defaultText">Kategorija: {{ kategorija[oglas.kategorija] }}</span>
                         <span class="defaultText">Cena: {{ oglas.cena }} RSD</span>
                         <span class="defaultText">{{ oglas.opis }}</span>
-                        <span class="defaultItalicText">{{ oglas.userNaziv }}</span>
+                        <div class="w-full mt-2">
+                            <span class="defaultItalicText float-right">{{ oglas.userNaziv }}</span>
+                        </div>
                     </div>
                 </NuxtLink>
             </div>
