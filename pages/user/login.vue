@@ -1,12 +1,13 @@
 <script setup>
     import { ref } from 'vue'
-    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "firebase/auth";
     const auth = getAuth()
     auth.languageCode = auth.useDeviceLanguage();
 
     const email = ref('')
     const password = ref('')
     var errorMsg = ref('')
+    var infoMsg = ref('')
 
     const logInUser = async() => {
         signInWithEmailAndPassword(auth, email.value, password.value)
@@ -30,6 +31,21 @@
                 console.log('google log in')
                 navigateTo('/');
             }).catch((error) => {
+                const errorCode = error.code;
+                errorMsg.value = error.message;
+                console.log(errorCode, errorMsg)
+            });
+    }
+
+    const forgotPassword = async() => {
+        sendPasswordResetEmail(auth, email.value)
+            .then(() => {
+                infoMsg.value = 'Mail za resetovanje šifre je poslat'
+                setInterval(() => {
+                    infoMsg.value = ''
+                }, 5000);
+            })
+            .catch((error) => {
                 const errorCode = error.code;
                 errorMsg.value = error.message;
                 console.log(errorCode, errorMsg)
@@ -68,15 +84,16 @@
                     <button class="defaultButton ml-2"><span class="defaultLightText">Registruj se</span></button>
                 </NuxtLink>
             </span>
-            <NuxtLink to="/user/forgot">
-                <button class="defaultButton"><span class="defaultLightText">Zaboravili ste lozinku?</span></button>
-            </NuxtLink>
+            <button class="defaultButton"><span class="defaultLightText" @click="forgotPassword">Zaboravili ste lozinku?</span></button>
             <div class="grow">
                 <NuxtLink to="/" class="float-right">
                     <button class="defaultButton"><span class="defaultLightText">Nazad</span></button>
                 </NuxtLink>
             </div>
         </div>
+    </div>
+    <div v-if="infoMsg" class="card mt-2 text-center">
+        <span class="defaultText">{{ infoMsg }}</span>
     </div>
     <div v-if="errorMsg" class="errorCard mt-2 text-center">
         <span class="defaultText">Došlo je do greške: {{ errorMsg }}</span>
