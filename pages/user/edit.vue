@@ -1,7 +1,7 @@
 <script setup>
     import { ref } from 'vue'
     import { getAuth, updateProfile, onAuthStateChanged, sendEmailVerification, reauthenticateWithCredential, EmailAuthProvider, reauthenticateWithPopup, OAuthProvider } from "firebase/auth";
-    import { getFirestore, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+    import { getFirestore, getDoc, getDocs, doc, updateDoc, setDoc, collection, where, query } from 'firebase/firestore';
     import { getStorage, ref as strRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
     const storage = getStorage();
     const auth = getAuth()
@@ -45,7 +45,7 @@
     });
 
     const updateUser = async() => {
-        console.log(name.value, brTel.value)
+        console.log(name.value,)
         updateProfile(auth.currentUser, {
             displayName: name.value
         }).then(async () => {
@@ -53,6 +53,17 @@
         }).catch((error) => {
             errorMsg = error.message;
             console.log(errorMsg)
+        });
+
+        var docRef = query(collection(db, "oglasi"), where("user", "==", auth.currentUser.uid));
+        await getDocs(docRef).then((querySnapshot) => {
+            querySnapshot.forEach(async(docs) => {
+                await updateDoc(doc(db, "oglasi", docs.id), {
+                    userNaziv: name.value
+                });
+            });
+        }).catch((error) => {
+            console.log("Error getting documents: ", error);
         });
     }
 
@@ -94,7 +105,7 @@
         await updateUser();
         await updateUserInfo();
         infoMsg.value = 'Uspešno ste izmenili Vaše podatke'
-        setInterval(() => {
+        setTimeout(() => {
             infoMsg.value = ''
         }, 5000);
     }
@@ -105,7 +116,7 @@
         errorMsg.value = '';
         if (file.size > 1024 * 1024 * 2) {
             errorMsg.value = 'Slika ne sme biti veća od 2 MB';
-            setInterval(() => {
+            setTimeout(() => {
                 errorMsg.value = ''
             }, 5000);
             return;
@@ -157,10 +168,21 @@
         sendEmailVerification(auth.currentUser)
             .then(() => {
                 infoMsg.value = 'Uspešno ste poslali verifikacioni E-Mail';
-                setInterval(() => {
+                setTimeout(() => {
                     infoMsg.value = ''
                 }, 5000);
             });
+    }
+
+    const deleteUserOglasi = async() => {
+        var docRef = collection(db, "oglasi").where('user', '==', auth.currentUser.uid);
+        await getDocs(docRef).then((querySnapshot) => {
+            querySnapshot.forEach(async(docs) => {
+                docs.ref.delete();
+            });
+        }).catch((error) => {
+            console.log("Error getting documents: ", error);
+        });
     }
 
 
@@ -172,6 +194,7 @@
             reauthenticateWithPopup(auth.currentUser, provider).then(() => {
                 // User re-authenticated.
                 console.log('reauthenticated')
+                deleteUserOglasi();
                 auth.currentUser.delete().then(() => {
                     // User deleted.
                     console.log('user deleted')
@@ -194,6 +217,7 @@
         );
 
         reauthenticateWithCredential(auth.currentUser, credential).then(() => {
+            deleteUserOglasi();
             auth.currentUser.delete().then(() => {
                 console.log('user deleted')
                 navigateTo('/')

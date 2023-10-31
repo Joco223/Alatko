@@ -1,8 +1,9 @@
 <script setup>
-    import { ref } from 'vue'
-    import { getAuth, updateProfile, onAuthStateChanged, sendEmailVerification, reauthenticateWithCredential, EmailAuthProvider, reauthenticateWithPopup, OAuthProvider } from "firebase/auth";
-    import { getFirestore, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+    import { ref, onMounted } from 'vue'
+    import { getAuth, onAuthStateChanged  } from "firebase/auth";
+    import { getFirestore, getDoc, setDoc, doc } from 'firebase/firestore';
     import { getStorage, ref as strRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+    import { v4 as uuidv4 } from 'uuid';
     const storage = getStorage();
     const auth = getAuth()
     const db = getFirestore();
@@ -15,75 +16,50 @@
     var uploadStatus = ref(false)
 
     var mainImg = ref('https://dummyimage.com/400/7d7d7d/212121&text=Nema+slike')
-    var imgUrls = []
     var oglasName = ref('')
     var cena = ref(0)
-    var kategorija = ref(1)
+    var izabranaKat = ref(null)
     var oglasOpis = ref('')
+    var kategorija = ref({})
+
+    const docRef = doc(db, "kategorije", "kategorije");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        kategorija = docSnap.data();
+        // sort kategorija
+        kategorija = Object.fromEntries(
+            Object.entries(kategorija).sort(([,a],[,b]) => a-b)
+        );
+    } else {
+        console.log("No such document!");
+    }
+
+    onMounted(() => {
+        var sel = document.getElementById('kategorijaSelect');
+        izabranaKat.value = sel.options[0];
+        console.log('1')
+    })
+
+    console.log(kategorija)
+
 
     onAuthStateChanged(auth, (user) => {
     if (user) {
         userId = user.uid;
     } else {
         userId = null;
+        navigateTo('/login');
     }
     });
 
-    const handleFiles = () => {
-        var files = event.target.files;
-        var urls = [];
-
-        files.forEach(file => {
-            errorMsg.value = '';
-            if (file.size > 1024 * 1024 * 2) {
-                errorMsg.value = 'Slika ne sme biti veća od 2 MB';
-                setInterval(() => {
-                    errorMsg.value = ''
-                }, 5000);
-                return;
-            }
-    
-            var storageRef = strRef(storage, 'userImages/' + auth.currentUser.uid);
-            var uploadTask = uploadBytesResumable(storageRef, file);
-    
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    // Observe state change events such as progress, pause, and resume
-                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    switch (snapshot.state) {
-                        case 'paused':
-                            uploadImagesStatus.value = false;
-                            break;
-                        case 'running':
-                            uploadImagesStatus.value = true;
-                            break;
-                    }
-                },
-                (error) => {
-                    console.log(error.message)
-                },
-                () => {
-                    // Handle successful uploads on complete
-                    // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-                    uploadStatus.value = false;
-                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                        console.log('File available at', downloadURL);
-                        urls.push(downloadURL);
-                    });
-                });
-        });
-
-        imgUrls = urls;
-    };
-
-    const handleFile = () => {
+    const handleFile = (file) => {
         file = event.target.files[0];
 
         errorMsg.value = '';
         if (file.size > 1024 * 1024 * 2) {
             errorMsg.value = 'Slika ne sme biti veća od 2 MB';
-            setInterval(() => {
+            setTimeout(() => {
                 errorMsg.value = ''
             }, 5000);
             return;
@@ -96,7 +72,6 @@
             (snapshot) => {
                 // Observe state change events such as progress, pause, and resume
                 // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 switch (snapshot.state) {
                     case 'paused':
                         uploadStatus.value = false;
@@ -117,6 +92,56 @@
                 });
             }
         );
+    }
+
+    const saveOglas = async() => {
+        if (userId == null) {
+            redirectTo('/user/login');
+        }
+
+        if (oglasName.value == '') {
+            errorMsg.value = 'Morate uneti naziv oglasa';
+            setTimeout(() => {
+                errorMsg.value = ''
+            }, 5000);
+            return;
+        }
+
+        if (cena.value == 0) {
+            errorMsg.value = 'Morate uneti cenu oglasa';
+            setTimeout(() => {
+                errorMsg.value = ''
+            }, 5000);
+            return;
+        }
+
+        if (izabranaKat == null) {
+            errorMsg.value = 'Morate izabrati kategoriju oglasa';
+            setTimeout(() => {
+                errorMsg.value = ''
+            }, 5000);
+            return;
+        }
+
+        var id = uuidv4();
+
+        await setDoc(doc(db, "oglasi", id), {
+            naziv: oglasName.value,
+            cena: cena.value,
+            kategorija: izabranaKat.value,
+            opis: oglasOpis.value,
+            slika: mainImg.value,
+            creationTime: Date.now(),
+            userNaziv: auth.currentUser.displayName,
+            user: userId,
+            oglasId: id
+        });
+
+        infoMsg.value = 'Oglas je uspešno sačuvan';
+        setTimeout(() => {
+            infoMsg.value = ''
+            navigateTo('/')
+        }, 5000);
     }
 </script>
 
@@ -141,7 +166,7 @@
                         </div>
                     </button>
                     <span class="defaultItalicText">Maksimum 2 MB</span>
-                    <input type="file" ref="file" @change="handleFiles" style="display:none;">
+                    <input type="file" ref="file" @change="handleFile" style="display:none;">
                 </div>
             </div>
         </div>
@@ -155,13 +180,9 @@
             </label>
             <label class="flex flex-col">
                 <span class="defaultText">Kategorija:</span>
-                <select class="defaultInput" v-model="kategorija">
-                    <option value="1" selected>Automobili</option>
-                    <option value="2">Nekretnine</option>
-                    <option value="3">Računari</option>
-                    <option value="4">Mobilni telefoni</option>
-                    <option value="5">Kućni ljubimci</option>
-                    <option value="6">Ostalo</option>
+                <select class="defaultInput" id="kategorijaSelect" v-model="izabranaKat">
+                    <option :value="null" disabled selected>Izaberite kategoriju</option>
+                    <option v-for="(val, key) in kategorija" :key="val" :value="val">{{ key }}</option>
                 </select>
             </label>
         </div>
@@ -173,7 +194,7 @@
             <textarea class="defaultInput" v-model="oglasOpis" cols="30" rows="5"></textarea>
         </label>
         <div class="mt-2">
-            <button class="defaultButton" @click="updateAllInfo"><span class="defaultLightText">Sačuvaj izmene</span></button>
+            <button class="defaultButton" @click="saveOglas"><span class="defaultLightText">Sačuvaj oglas</span></button>
             <NuxtLink to="/" class="float-right">
                 <button class="defaultButton"><span class="defaultLightText">Nazad</span></button>
             </NuxtLink>

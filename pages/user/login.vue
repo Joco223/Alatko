@@ -41,7 +41,7 @@
         sendPasswordResetEmail(auth, email.value)
             .then(() => {
                 infoMsg.value = 'Mail za resetovanje šifre je poslat'
-                setInterval(() => {
+                setTimeout(() => {
                     infoMsg.value = ''
                 }, 5000);
             })

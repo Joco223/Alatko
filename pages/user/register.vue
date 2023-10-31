@@ -1,6 +1,8 @@
 <script setup>
     import { ref } from 'vue'
     import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup, updateProfile } from "firebase/auth";
+    import { getFirestore, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+    const db = getFirestore();
     const auth = getAuth()
     const provider = new GoogleAuthProvider();
     auth.languageCode = auth.useDeviceLanguage();
@@ -11,9 +13,21 @@
     const password = ref('')
     var errorMsg = ref('')
 
-    // const getUser = async() => {
-    //     console.log(auth.currentUser)
-    // }
+    const updateUserDBName = async() => {
+        const docRef = doc(db, "users", auth.currentUser.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            await updateDoc(doc(db, "users", auth.currentUser.uid), {
+                naziv: name.value
+            });
+        } else {
+            await setDoc(doc(db, "users", auth.currentUser.uid), {
+                naziv: name.value
+
+            });
+        }
+    }
 
     const registerUser = async() => {
         createUserWithEmailAndPassword(auth, email.value, password.value)
@@ -31,6 +45,9 @@
                 });
 
                 verifyEmail();
+
+                updateUserDBName();
+
                 navigateTo('/user/login');
             })
             .catch((error) => {
@@ -57,6 +74,8 @@
                 console.log('google log in')
                 console.log(credential)
                 console.log(user)
+                updateUserDBName();
+
                 navigateTo('/');
             }).catch((error) => {
                 // Handle Errors here.
@@ -64,14 +83,6 @@
                 errorMsg = error.message;
             });
     }
-
-    // const logOut = async() => {
-    //     signOut(auth).then(() => {
-    //         console.log('logout')
-    //     }).catch((error) => {
-    //         errorMsg = error.message;
-    //     });
-    // }
 </script>
 
 <template>
