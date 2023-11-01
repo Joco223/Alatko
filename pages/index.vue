@@ -69,7 +69,7 @@
 </script>
 
 <template>
-    <div class="grid gap-x-4 gap-y-4 grid-cols-3">
+    <div class="grid gap-x-4 gap-y-4 grid-cols-3 w-3/4">
         <div class="card col-span-2">
             <h3 class="defaultHeader mb-2">Pretraži oglase</h3>
             <!-- <div class="grid gap-y-2 gap-x-2 grid-cols-3">

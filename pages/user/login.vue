@@ -55,7 +55,7 @@
 </script>
 
 <template>
-    <div class="card flex flex-col">
+    <div class="card flex flex-col w-2/5">
         <h5 class="defaultHeader mb-4">Log In</h5>
         <div class="grid gap-x-2 grid-cols-2">
             <label class="flex flex-col">
