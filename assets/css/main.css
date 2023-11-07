@@ -22,6 +22,10 @@
     @apply rounded-lg outline-2 outline-dashed outline-offset-1 outline-orange-400;
 }
 
+@media only screen and (max-width: 800px) {
+    
+}
+
 .defaultButton {
     @apply rounded-md bg-orange-400 mr-2 shadow-orang active:translate-x-0.5 active:translate-y-0.5 active:shadow-orangActive hover:bg-orange-300 p-1;
 }

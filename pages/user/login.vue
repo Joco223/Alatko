@@ -54,8 +54,16 @@
 
 </script>
 
+<style>
+    @media screen and (max-width: 768px) {
+        .grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 <template>
-    <div class="card flex flex-col w-2/5">
+    <div class="card flex flex-col md:w-2/5 w-3/4">
         <h5 class="defaultHeader mb-4">Log In</h5>
         <div class="grid gap-x-2 grid-cols-2">
             <label class="flex flex-col">
@@ -77,17 +85,17 @@
             </button>
         </div>
 
-        <div class="flex gapx-x-1 mt-4">
+        <div class="flex flex-col space-y-4 mt-4">
             <span class="defaultText">
                 Nemate nalog?
-                <NuxtLink to="/user/register">
-                    <button class="defaultButton ml-2"><span class="defaultLightText">Registruj se</span></button>
+                <NuxtLink to="/user/register" class="md:w-1/5">
+                    <button class="defaultButton md:w-1/5"><span class="defaultLightText">Registruj se</span></button>
                 </NuxtLink>
             </span>
-            <button class="defaultButton"><span class="defaultLightText" @click="forgotPassword">Zaboravili ste lozinku?</span></button>
-            <div class="grow">
-                <NuxtLink to="/" class="float-right">
-                    <button class="defaultButton"><span class="defaultLightText">Nazad</span></button>
+            <div class="flex flex-col md:flex-row justify-between">
+                <button class="defaultButton w-full md:w-1/3"><span class="defaultLightText" @click="forgotPassword">Zaboravili ste lozinku?</span></button>
+                <NuxtLink to="/" class="w-full md:w-1/5 md:self-end mt-2 md:mt-0">
+                    <button class="defaultButton w-full"><span class="defaultLightText">Nazad</span></button>
                 </NuxtLink>
             </div>
         </div>

@@ -127,6 +127,8 @@
 
         await setDoc(doc(db, "oglasi", id), {
             naziv: oglasName.value,
+            nazivLowercase: oglasName.value.toLowerCase(),
+            searchTerms: oglasName.value.toLowerCase().split(' '),
             cena: cena.value,
             kategorija: izabranaKat.value,
             opis: oglasOpis.value,
@@ -146,7 +148,7 @@
 </script>
 
 <template>
-    <div class="card">
+    <div class="card w-1/2">
         <h3 class="defaultHeader mb-2">Novi oglas</h3>
         <div class="grid gap-x-3 grid-cols-4">
             <img :src="mainImg" class="imageCard w-42 h-44 overflow-hidden" referrerpolicy="no-referrer">

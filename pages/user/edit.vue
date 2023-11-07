@@ -232,6 +232,14 @@
     }
 </script>
 
+<style>
+    @media screen and (max-width: 768px) {
+        .grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 <template>
     <div v-if="confirmPass" class="card w-1/2 mx-auto">
         <h3 class="defaultSmallHeader mb-2">Unesite Vašu šifru da bi potvrdili identitet</h3>
@@ -247,7 +255,7 @@
     <div v-else class="card">
         <h3 class="defaultHeader mb-2">{{ auth.currentUser?.displayName }}</h3>
         <div class="grid gap-x-3 grid-cols-4">
-            <img :src="img" class="imageCard w-42 h-44 overflow-hidden" referrerpolicy="no-referrer">
+            <img :src="img" class="imageCard w-full col-span-2 md:col-span-1 md:w-42 md:h-44 overflow-hidden" referrerpolicy="no-referrer">
             <div class="flex flex-col justify-between col-span-2">
                 <div class="flex flex-col">
                     <span class="defaultText mb-1">E-Mail: {{ auth.currentUser?.email }}</span>
@@ -275,7 +283,7 @@
             </div>
             <div class="flex flex-col gap-y-2">
                 <button class="defaultButton w-full" @click="sendEmailVer" v-if="!auth.currentUser?.emailVerified"><span class="defaultLightText">Pošalji verifikacioni E-Mail</span></button>
-                <NuxtLink to="/user/changePassword" class="w-full">
+                <NuxtLink to="/user/changePassword" class="w-full mt-2">
                     <button class="defaultButton w-full"><span class="defaultLightText">Promeni lozinku</span></button>
                 </NuxtLink>
                 <button v-if="!confirmDelete" class="warningButton w-full" @click="confirmDelete = true"><span class="defaultLightText">Obriši nalog</span></button>
@@ -283,7 +291,7 @@
                     <span class="defaultText mb-1">Da li ste sigurni?</span>
                     <div class="grid gap-x-2 grid-cols-2">
                         <button class="warningButton w-full" @click="deleteUser"><span class="defaultLightText">Obriši</span></button>
-                        <button class="defaultButton w-full" @click="confirmDelete = false"><span class="defaultLightText">Nazad</span></button>
+                        <button class="defaultButton w-full mt-2 md:mt-0" @click="confirmDelete = false"><span class="defaultLightText">Nazad</span></button>
                     </div>
                 </div>
             </div>
@@ -315,10 +323,10 @@
             </div>
             <textarea class="defaultInput" v-model="opisText" cols="30" rows="5"></textarea>
         </label>
-        <div class="mt-2">
-            <button class="defaultButton" @click="updateAllInfo"><span class="defaultLightText">Sačuvaj izmene</span></button>
+        <div class="mt-2 flex flex-col md:flex-row md:justify-end">
+            <button class="defaultButton w-full md:w-1/5" @click="updateAllInfo"><span class="defaultLightText">Sačuvaj izmene</span></button>
             <NuxtLink to="/" class="float-right">
-                <button class="defaultButton"><span class="defaultLightText">Nazad</span></button>
+                <button class="defaultButton mt-2 w-full md:1/5 md:mt-0"><span class="defaultLightText">Nazad</span></button>
             </NuxtLink>
         </div>
     </div>
