@@ -1,7 +1,8 @@
 <script setup>
     import { ref } from 'vue'
     import { getAuth, onAuthStateChanged } from "firebase/auth";
-    import { getFirestore, collection, getDocs, getDoc, doc, query, where, orderBy } from 'firebase/firestore';
+    import { getFirestore, collection, getDocs, setDoc, getDoc, doc, query, where, orderBy } from 'firebase/firestore';
+    import { v4 as uuidv4 } from 'uuid';
     var auth = getAuth()
     const db = getFirestore();
     auth.languageCode = auth.useDeviceLanguage();
@@ -45,6 +46,9 @@
     var searchName = ref('')
     var searchCenaOd = ref(null)
     var searchCenaDo = ref(null)
+
+    const infoMsg = ref('')
+    const errorMsg = ref('')
 
     loadKategorije();
     loadOglasi();
@@ -146,10 +150,48 @@
         oglasi.value = [];
         loadOglasi();
     }
+
+    //Create chat object in database
+    const createChat = async (oglasId, oglasNaziv, receiver, receiverId) => {
+        try {
+            const senderId = auth.currentUser.uid;
+            const querySnapshot = await getDocs(
+                query(
+                    collection(db, "chats"),
+                    where("senderId", "==", senderId),
+                    where("receiverId", "==", receiverId)
+                )
+            );
+            if (!querySnapshot.empty) {
+                // Chat between these two users already exists
+                navigateTo('/user/messages');
+                return;
+            }
+
+            const id = uuidv4();
+            const docRef = doc(db, "chats", id);
+            const docData = {
+                chatId: id,
+                oglasId: oglasId,
+                oglasNaziv: oglasNaziv,
+                sender: auth.currentUser.displayName,
+                senderId: senderId,
+                receiver: receiver,
+                receiverId: receiverId,
+                lastMessage: '',
+                lastMessageDate: ''
+            };
+            await setDoc(docRef, docData);
+            navigateTo('/user/messages');
+        } catch (error) {
+            errorMsg.value = error.message;
+        }
+    };
+
 </script>
 
 <style>
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 1024px) {
         .grid {
             grid-template-columns: 1fr;
         }
@@ -157,8 +199,8 @@
 </style>
 
 <template>
-    <div class="grid gap-x-4 gap-y-4 md:grid-cols-3 w-3/4">
-        <div class="card col-span-2 md:order-first">
+    <div class="grid gap-x-4 gap-y-4 lg:grid-cols-3 w-3/4">
+        <div class="card col-span-2 lg:order-first">
             <h3 class="defaultHeader mb-2">Pretraži oglase</h3>
             <div class="grid gap-y-2 gap-x-2 grid-cols-2">
                 <div class="flex flex-col">
@@ -195,18 +237,18 @@
                     </select>
                 </div>
             </div>
-            <div class="flex flex-col md:justify-end md:flex-row md:transition-all md:grow">
-                <button type="button" class="defaultButton float-right mt-2 md:w-1/5" @click="clearSearch"><span class="defaultLightText">Poništi pretragu</span></button>
-                <button type="button" class="defaultButton float-right mt-2 md:w-1/5" @click="search"><span class="defaultLightText">Pretraži</span></button>
+            <div class="flex flex-col lg:justify-end lg:flex-row lg:transition-all lg:grow">
+                <button type="button" class="defaultButton float-right mt-2 lg:w-1/5" @click="clearSearch"><span class="defaultLightText">Poništi pretragu</span></button>
+                <button type="button" class="defaultButton float-right mt-2 lg:w-1/5" @click="search"><span class="defaultLightText">Pretraži</span></button>
             </div>
         </div>
-        <div v-if="loggedIn" class="cardSmallPadding col-span-2 md:col-span-1 order-first md:order-2">
+        <div v-if="loggedIn" class="cardSmallPadding col-span-2 lg:col-span-1 order-first lg:order-2">
             <h3 class="defaultHeader mb-2">Vaš profil</h3>
             <div class="grid gap-y-2 gap-x-2 grid-cols-2">
-                <img :src="img" class="imageCard w-full md:h-26" referrerpolicy="no-referrer">
+                <img :src="img" class="imageCard w-full lg:h-26" referrerpolicy="no-referrer">
                 <div class="flex flex-col">
                     <span class="defaultMediumHeader mb-1">{{ pageUser?.displayName }}</span>
-                    <span class="defaultText md:text-xs">{{ pageUser?.email }}</span>
+                    <span class="defaultText textOverflow lg:text-xs">{{ pageUser?.email }}</span>
                 </div>
                 <NuxtLink to="/user/newOglas" v-if="loggedIn" class="w-full">
                     <button class="confirmButton w-full"><span class="defaultLightGreenText">Novi oglas</span></button>
@@ -220,34 +262,41 @@
                 <button @click="logOut" v-if="loggedIn" class="defaultButton w-full"><span class="defaultLightText">Log out</span></button>
             </div>
         </div>
-        <div v-else class="cardSmallPadding md:h-1/3 col-span-2 md:col-span-1 order-first md:order-2">
+        <div v-else class="cardSmallPadding lg:h-1/3 col-span-2 lg:col-span-1 order-first lg:order-2">
             <h3 class="defaultHeader mb-2">Niste ulogovani</h3>
-            <div class="flex flex-col md:col-span-2 md:flex-row md:grow md:space-x-2">
-                <NuxtLink to="/user/login" class="md:w-1/2">
+            <div class="flex flex-col lg:col-span-2 lg:flex-row lg:grow lg:space-x-2">
+                <NuxtLink to="/user/login" class="lg:w-1/2">
                     <button class="defaultButton w-full"><span class="defaultLightText">Uloguj se</span></button>
                 </NuxtLink>
-                <NuxtLink to="/user/register" class="md:w-1/2">
-                    <button class="defaultButton w-full mt-2 md:mt-0"><span class="defaultLightText">Registruj se</span></button>
+                <NuxtLink to="/user/register" class="lg:w-1/2">
+                    <button class="defaultButton w-full mt-2 lg:mt-0"><span class="defaultLightText">Registruj se</span></button>
                 </NuxtLink>
             </div>
         </div>
         <!-- Prikaži oglase -->
-        <div class="col-span-2 md:order-3">
-            <div v-for="oglas in oglasi" :key="oglas.id" class="cardSmallPadding mb-2 w-full">
-                <NuxtLink :to="'/oglas/' + oglas.id" class="grid gap-x-2 grid-cols-3">
-                    <img :src="oglas.slika" class="imageCard col-span-2 md:col-span-1 w-full h-full min-h-32" referrerpolicy="no-referrer">
-                    <div class="flex flex-col col-span-2 justify-between">
+        <div class="col-span-2 lg:order-3">
+            <div v-for="oglas in oglasi" :key="oglas.id" class="card mb-2 w-full">
+                <div class="grid gap-x-2 grid-cols-3">
+                    <img :src="oglas.slika" class="imageCard col-span-2 lg:col-span-1 w-full h-full min-h-32" referrerpolicy="no-referrer">
+                    <div class="flex flex-col lg:col-span-2 justify-between">
                         <div class="flex flex-col">
                             <span class="defaultHeader mb-1">{{ oglas.naziv }}</span>
                             <span class="defaultText">Kategorija: {{ kategorija[oglas.kategorija] }}</span>
                             <span class="defaultText">Cena: {{ oglas.cena }} RSD</span>
                             <span class="defaultText">{{ oglas.opis }}</span>
                         </div>
-                        <div class="w-full mt-2">
-                            <span class="defaultItalicText float-right">{{ oglas.userNaziv }} - Postavljeno {{ getDateFormatted(oglas.creationTime) }}</span>
+                        <div class="w-full mt-2 flex justify-between">
+                            <span class="defaultItalicText">{{ oglas.userNaziv }} - Postavljeno {{ getDateFormatted(oglas.creationTime) }}</span>
+                            <button @click="createChat(oglas.oglasId, oglas.naziv, oglas.userNaziv, oglas.user)" class="defaultButton"><span class="defaultLightText">Pošalji poruku</span></button>
                         </div>
                     </div>
-                </NuxtLink>
+                </div>
+            </div>
+            <div v-if="infoMsg" class="card mt-2 text-center">
+                <span class="defaultText">{{ infoMsg }}</span>
+            </div>
+            <div v-if="errorMsg" class="errorCard mt-2 text-center">
+                <span class="defaultText">Došlo je do greške: {{ errorMsg }}</span>
             </div>
         </div>
     </div>

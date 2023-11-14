@@ -92,17 +92,7 @@
 </script>
 
 <template>
-    <!-- <h2>Ovo je stranica za registraciju</h2>
-
-    <input v-model="name" type="text" placeholder="Unesite Vaše ime i prezime"><br>
-    <input v-model="email" type="email" placeholder="Unesite E-Mail adresu"><br>
-    <input v-model="password" type="password" placeholder="Unesite lozinku"><br>
-    <button @click="registerUser">Registruj se</button><br>
-    <button @click="logInWithGoogle">Registuj se sa guglom</button><br>
-    <NuxtLink to="/user/login">Uloguj se</NuxtLink><br>
-    <div>{{ errorMsg }}</div> -->
-
-    <div class="card flex flex-col w-2/5">
+    <div class="card flex flex-col lg:w-2/5 w-3/4">
         <h5 class="defaultHeader mb-4">Registrujte se</h5>
         <div class="grid gap-x-2 grid-cols-2">
             <label class="flex flex-col">
@@ -132,16 +122,16 @@
             </button>
         </div>
 
-        <div class="flex gapx-x-1 mt-4">
+        <div class="flex flex-col lg:flex-row gap-x-1 gap-y-2 mt-4">
             <span class="defaultText">
                 Imate nalog?
                 <NuxtLink to="/user/login">
-                    <button class="defaultButton ml-2"><span class="defaultLightText">Uloguj se</span></button>
+                    <button class="defaultButton"><span class="defaultLightText">Uloguj se</span></button>
                 </NuxtLink>
             </span>
             <div class="grow">
-                <NuxtLink to="/" class="float-right">
-                    <button class="defaultButton"><span class="defaultLightText">Nazad</span></button>
+                <NuxtLink to="/" class="float-right w-full lg:w-1/4 lg:self-end">
+                    <button class="defaultButton w-full"><span class="defaultLightText">Nazad</span></button>
                 </NuxtLink>
             </div>
         </div>

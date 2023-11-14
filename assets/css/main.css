@@ -3,27 +3,37 @@
 @tailwind utilities;
 
 .card {
-    @apply bg-orange-50 rounded-lg border-4 border-orange-400 p-3;
+    @apply shadow-orangActive bg-orange-50 rounded-lg border-4 border-orange-400 p-3;
 }
 
 .cardSmallPadding {
-    @apply bg-orange-50 rounded-lg border-4 border-orange-400 p-2;
+    @apply shadow-orangActive bg-orange-50 rounded-lg border-4 border-orange-400 p-2;
 }
 
 .popupCard {
-    @apply bg-orange-50 rounded-lg border-4 border-orange-400 p-3;
+    @apply shadow-orangActive bg-orange-50 rounded-lg border-4 border-orange-400 p-3;
 }
 
 .errorCard {
-    @apply bg-orange-100 rounded-lg border-4 border-orange-600 p-3;
+    @apply shadow-orangWarningActive bg-orange-100 rounded-lg border-4 border-orange-600 p-3;
+}
+
+.errorCardSmallPadding {
+    @apply shadow-orangWarningActive bg-orange-100 rounded-lg border-4 border-orange-600 p-2;
 }
 
 .imageCard {
     @apply rounded-lg outline-2 outline-dashed outline-offset-1 outline-orange-400;
 }
 
-@media only screen and (max-width: 800px) {
-    
+body {
+    background-color: #fff5ea;
+}
+
+.textOverflow {
+    white-space: nowrap; /* Prevents text from wrapping */
+    overflow: hidden; /* Hides any content that overflows the element */
+    text-overflow: ellipsis; /* Displays an ellipsis (...) to represent the clipped text */
 }
 
 .defaultButton {
