@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "alatko-223"
+  },
+  "targets": {
+    "alatko-223": {
+      "hosting": {
+        "alatko": [
+          "alatko-223"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
