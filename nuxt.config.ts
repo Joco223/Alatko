@@ -10,6 +10,6 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: 'firebase',
+    preset: 'cloudflare-pages',
   }
 })
