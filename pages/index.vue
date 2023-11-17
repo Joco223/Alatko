@@ -190,16 +190,8 @@
 
 </script>
 
-<style>
-    @media screen and (max-width: 1024px) {
-        .grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-
 <template>
-    <div class="grid gap-x-4 gap-y-4 lg:grid-cols-3 w-3/4">
+    <div class="grid lg:gap-x-4 gap-y-4 lg:grid-cols-3 grid-cols-1 w-3/4">
         <div class="card col-span-2 lg:order-first">
             <h3 class="defaultHeader mb-2">Pretraži oglase</h3>
             <div class="grid gap-y-2 gap-x-2 grid-cols-2">
@@ -242,7 +234,7 @@
                 <button type="button" class="defaultButton float-right mt-2 lg:w-1/5" @click="search"><span class="defaultLightText">Pretraži</span></button>
             </div>
         </div>
-        <div v-if="loggedIn" class="cardSmallPadding col-span-2 lg:col-span-1 order-first lg:order-2">
+        <div v-if="loggedIn" class="cardSmallPadding col-span-1 order-first lg:order-2">
             <h3 class="defaultHeader mb-2">Vaš profil</h3>
             <div class="grid gap-y-2 gap-x-2 grid-cols-2">
                 <img :src="img" class="imageCard w-full lg:h-26" referrerpolicy="no-referrer">
@@ -262,7 +254,7 @@
                 <button @click="logOut" v-if="loggedIn" class="defaultButton w-full"><span class="defaultLightText">Log out</span></button>
             </div>
         </div>
-        <div v-else class="cardSmallPadding lg:h-1/3 col-span-2 lg:col-span-1 order-first lg:order-2">
+        <div v-else class="cardSmallPadding lg:h-1/3 col-span-1 order-first lg:order-2">
             <h3 class="defaultHeader mb-2">Niste ulogovani</h3>
             <div class="flex flex-col lg:col-span-2 lg:flex-row lg:grow lg:space-x-2">
                 <NuxtLink to="/user/login" class="lg:w-1/2">
@@ -274,7 +266,7 @@
             </div>
         </div>
         <!-- Prikaži oglase -->
-        <div class="col-span-2 lg:order-3">
+        <div class="col-span-1 lg:col-span-2 lg:order-3">
             <div v-for="oglas in oglasi" :key="oglas.id" class="card mb-2 w-full">
                 <div class="grid gap-x-2 grid-cols-3">
                     <img :src="oglas.slika" class="imageCard col-span-2 lg:col-span-1 w-full h-full min-h-32" referrerpolicy="no-referrer">

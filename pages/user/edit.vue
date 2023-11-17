@@ -185,6 +185,23 @@
         });
     }
 
+    // Remove user profile image
+    const removeImg = async() => {
+        img.value = 'https://dummyimage.com/400/7d7d7d/212121&text=Nema+slike';
+        if (userId != null) {
+            updateProfile(auth.currentUser, {
+                photoURL: 'https://dummyimage.com/400/7d7d7d/212121&text=Nema+slike'
+            }).then(() => {
+                console.log('Image update successful')
+                infoMsg.value = 'Profilna slika je uklonjena';
+                setTimeout(() => {
+                    infoMsg.value = ''
+                }, 5000);
+            }).catch((error) => {
+                errorMsg = error.message;
+            });
+        }
+    }
 
     const deleteUser = () => {
         if (auth.currentUser.providerData[0].providerId == 'password') {
@@ -252,7 +269,7 @@
             <button class="defaultButton" @click="confirmPass = false; password = ''; confirmDelete = false"><span class="defaultLightText">Nazad</span></button>
         </div>
     </div>
-    <div v-else class="card">
+    <div v-else class="card lg:w-1/2  md:w-4/6 w-3/4">
         <h3 class="defaultHeader mb-2">{{ auth.currentUser?.displayName }}</h3>
         <div class="grid gap-x-3 grid-cols-4">
             <img :src="img" class="imageCard w-full col-span-2 lg:col-span-1 lg:w-42 lg:h-44 overflow-hidden" referrerpolicy="no-referrer">
@@ -282,10 +299,11 @@
                 </div>
             </div>
             <div class="flex flex-col gap-y-2">
-                <button class="defaultButton w-full" @click="sendEmailVer" v-if="!auth.currentUser?.emailVerified"><span class="defaultLightText">Pošalji verifikacioni E-Mail</span></button>
+                <button class="defaultButton w-full mt-2" @click="sendEmailVer" v-if="!auth.currentUser?.emailVerified"><span class="defaultLightText">Pošalji verifikacioni E-Mail</span></button>
                 <NuxtLink to="/user/changePassword" class="w-full mt-2">
                     <button class="defaultButton w-full"><span class="defaultLightText">Promeni lozinku</span></button>
                 </NuxtLink>
+                <button class="defaultButton w-full" @click="removeImg"><span class="defaultLightText">Ukloni sliku</span></button>
                 <button v-if="!confirmDelete" class="warningButton w-full" @click="confirmDelete = true"><span class="defaultLightText">Obriši nalog</span></button>
                 <div v-else class="flex flex-col">
                     <span class="defaultText mb-1">Da li ste sigurni?</span>
