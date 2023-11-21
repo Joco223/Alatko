@@ -3,6 +3,7 @@
     import { getAuth, onAuthStateChanged  } from "firebase/auth";
     import { getFirestore, collection, updateDoc, getDocs, setDoc, doc, query, where, orderBy, or } from 'firebase/firestore';
     import { v4 as uuidv4 } from 'uuid';
+    import * as chatController from '../controllers/chatController.js'
     const auth = getAuth()
     auth.languageCode = auth.useDeviceLanguage();
     const db = getFirestore();
@@ -14,115 +15,57 @@
     const chats = ref([])
     const messages = ref([])
     const newMessage = ref('')
-    const selectedChatId = ref('')
-    
-    // Load chats
-    const loadChats = async () => {
-        try {
-            const q = query(collection(db, "chats"),
-                            or(where("senderId", "==", auth.currentUser.uid),
-                            where("receiverId", "==", auth.currentUser.uid)), 
-                            orderBy("lastMessageDate", "desc"));
-            const querySnapshot = await getDocs(q);
-            chats.value = []
-            querySnapshot.forEach((doc) => {
-                chats.value.push(doc.data())
-            });
-        } catch (error) {
-            errorMsg.value = error.message
-        }
-    }
+    const selectedChat = ref(null)
 
     onAuthStateChanged(auth, (user) => {
     if (user) {
-        loadChats();
+        console.log(user)
+        chatController.loadChats(auth.currentUser).then((data) => {
+            console.log(data)
+            chats.value = data
+        });
         loggedIn.value = true
     } else {
         loggedIn.value = false
     }
     });
 
-
-    // Load messages in a chat
-    const loadMessages = async (chatId) => {
-        try {
-            const q = query(collection(db, "messages"), where("chatId", "==", chatId), orderBy("date", "asc"));
-            const querySnapshot = await getDocs(q);
-            messages.value = []
-            querySnapshot.forEach((doc) => {
-                messages.value.push(doc.data())
-            });
-        } catch (error) {
-            errorMsg.value = error.message
-        }
-    }
-
-    // Create chat object in database
-    // const createChat = async (oglasId, receiverId) => {
+    // Send new message in a chat
+    // const sendMessage = async () => {
     //     try {
+    //         if (newMessage.value == '') {
+    //             infoMsg.value = 'Poruka ne može biti prazna'
+    //             return
+    //         }
+    //         const chatId = selectedChatId.value
+
     //         var id = uuidv4();
 
-    //         const docRef = doc(db, "chats", oglasId + '_' + id);
+    //         const docRef = doc(db, "messages", chatId + '_' + id);
     //         const docData = {
-    //             chatId: oglasId + '_' + id,
+    //             chatId: chatId,
+    //             messageId: id,
+    //             date: Date.now(),
     //             sender: auth.currentUser.displayName,
     //             senderId: auth.currentUser.uid,
-    //             receiver: receiverId,
-    //             lastMessage: '',
-    //             lastMessageDate: ''
+    //             text: newMessage.value
     //         }
     //         await setDoc(docRef, docData);
-    //         loadChats()
+
+    //         // Update last message and last message date in chats collection
+    //         await updateDoc(doc(db, "chats", chatId), {
+    //             lastMessage: newMessage.value,
+    //             lastMessageDate: Date.now()
+    //         });
+    //         await loadChats();
+
+    //         newMessage.value = ''
+    //         loadMessages(chatId)
     //     } catch (error) {
     //         errorMsg.value = error.message
     //     }
     // }
 
-    // Send new message in a chat
-    const sendMessage = async () => {
-        try {
-            if (newMessage.value == '') {
-                infoMsg.value = 'Poruka ne može biti prazna'
-                return
-            }
-            const chatId = selectedChatId.value
-
-            var id = uuidv4();
-
-            const docRef = doc(db, "messages", chatId + '_' + id);
-            const docData = {
-                chatId: chatId,
-                messageId: id,
-                date: Date.now(),
-                sender: auth.currentUser.displayName,
-                senderId: auth.currentUser.uid,
-                text: newMessage.value
-            }
-            await setDoc(docRef, docData);
-
-            // Update last message and last message date in chats collection
-            await updateDoc(doc(db, "chats", chatId), {
-                lastMessage: newMessage.value,
-                lastMessageDate: Date.now()
-            });
-            await loadChats();
-
-            newMessage.value = ''
-            loadMessages(chatId)
-        } catch (error) {
-            errorMsg.value = error.message
-        }
-    }
-
-    // Select chat and load messages
-    const selectChat = async (chatId) => {
-        try {
-            selectedChatId.value = chatId
-            loadMessages(chatId)
-        } catch (error) {
-            errorMsg.value = error.message
-        }
-    }
 
     const getDateFormatted = (date) => {
         var d = new Date(date);
@@ -161,14 +104,13 @@
                 </div>
             </div>
             <div v-else>
-                <div v-for="chat in chats" :key="chat.id" @click="selectChat(chat.chatId)" :class="{ 'errorCardSmallPadding' : selectedChatId == chat.chatId, 'cardSmallPadding' : selectedChatId != chat.chatId}" class="mb-2 flex flex-col">
+                <div v-for="chat in chats" :key="chat.id" @click="selectedChat = chat" :class="{ 'errorCardSmallPadding' : selectedChat == chat, 'cardSmallPadding' : selectedChat != chat}" class="mb-2 flex flex-col">
                     <div class="defaultMediumHeader">
                         {{ chat.oglasNaziv }}
                     </div>
                     <span class="defaultText textOverflow">Poruka: {{ chat.lastMessage }}</span>
                     <span class="defaultText">Datum: {{ getDateFormatted(chat.lastMessageDate) }}</span>
-                    <span class="defaultText">Pošiljalac: {{ chat.sender }}</span>
-                    <span class="defaultText">Primalac: {{ chat.receiver }}</span>
+                    <span class="defaultText">Korisnici: {{ chat.users }}</span>
                 </div>
             </div>
             <NuxtLink to="/" class="w-full lg:w-1/4 lg:self-end mt-2">
@@ -180,23 +122,23 @@
             <h3 class="defaultHeader mb-2">
                 Poruke
             </h3>
-            <div v-if="selectedChatId.value == ''" class="cardSmallPadding mx-auto lg:w-1/4 md:w-1/2 mb-2">
+            <div v-if="!selectedChat" class="cardSmallPadding mx-auto lg:w-1/4 md:w-1/2 mb-2">
                 <span class="defaultText">Nije izabran razgovor</span>
             </div>
             <div v-else>
                 <div v-if="messages.length == 0" class="cardSmallPadding text-center">
                     <span class="defaultText">Nemate poruke</span>
                 </div>
-                <div v-else v-for="message in messages" :key="message.id" class="cardSmallPadding flex flex-col mb-1">
+                <div v-else v-for="message in selectedChat.messages" :key="message.id" class="cardSmallPadding flex flex-col mb-1">
                     <span class="defaultMediumHeader mb-1">{{ message.sender }}</span>
                     <span class="defaultText">{{ message.text }}</span>
                     <div class="w-full mt-2">
-                        <span class="defaultItalicText float-right">{{ getDateFormatted(message.date) }}</span>
+                        <span class="defaultItalicText float-right">{{ getDateFormatted(message.timestamp) }}</span>
                     </div>
                 </div>
                 <div class="cardSmallPadding flex flex-col mt-2">
                     <textarea v-model="newMessage" class="defaultInput" placeholder="Unesite poruku"></textarea>
-                    <button @click="sendMessage" class="defaultButton lg:w-1/4 lg:self-end mt-2 w-full"><span class="defaultLightText">Pošalji</span></button>
+                    <button @click="sendMessageRT" class="defaultButton lg:w-1/4 lg:self-end mt-2 w-full"><span class="defaultLightText">Pošalji</span></button>
                 </div>
             </div>
         </div>

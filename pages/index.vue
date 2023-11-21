@@ -1,12 +1,14 @@
 <script setup>
     import { ref } from 'vue'
     import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { getDatabase, ref as rtRef, set, onValue, update } from "firebase/database";
     import { getFirestore, collection, getDocs, setDoc, getDoc, doc, query, where, orderBy } from 'firebase/firestore';
     import { v4 as uuidv4 } from 'uuid';
+    import * as chatController from '../controllers/chatController.js'
     var auth = getAuth()
     const db = getFirestore();
     auth.languageCode = auth.useDeviceLanguage();
-
+    const rtDB = getDatabase();
 
     const loadKategorije = async() => {
         const docRef = doc(db, "kategorije", "kategorije");
@@ -151,6 +153,39 @@
         loadOglasi();
     }
 
+    //Create chat object in realtime database
+    const createChatRT = async (oglasId, oglasNaziv, receiver, receiverId) => {
+        try {
+            // checks realtime database if chat exists
+            const q = query(rtRef(rtDB, "chats"),
+                            or(where("senderId", "==", auth.currentUser.uid),
+                            where("receiverId", "==", auth.currentUser.uid)), 
+                            orderBy("lastMessageDate", "desc"));
+            var id = uuidv4();
+
+            //gets snapshot of messages in realtime database and checks if they have data
+            const querySnapshot = await getDocs(q);
+
+
+            const docRef = rtRef(rtDB, "chats", id);
+            const docData = {
+                chatId: id,
+                oglasId: oglasId,
+                oglasNaziv: oglasNaziv,
+                sender: auth.currentUser.displayName,
+                senderId: senderId,
+                receiver: receiver,
+                receiverId: receiverId,
+                lastMessage: '',
+                lastMessageDate: ''
+            };
+            await set(docRef, docData);
+            navigateTo('/user/messages');
+        } catch (error) {
+            errorMsg.value = error.message;
+        }
+    };
+
     //Create chat object in database
     const createChat = async (oglasId, oglasNaziv, receiver, receiverId) => {
         try {
@@ -279,7 +314,7 @@
                         </div>
                         <div class="w-full mt-2 flex justify-between">
                             <span class="defaultItalicText">{{ oglas.userNaziv }} - Postavljeno {{ getDateFormatted(oglas.creationTime) }}</span>
-                            <button @click="createChat(oglas.oglasId, oglas.naziv, oglas.userNaziv, oglas.user)" class="defaultButton"><span class="defaultLightText">Pošalji poruku</span></button>
+                            <button @click="chatController.createChat(auth.currentUser, auth.currentUser, oglas)" class="defaultButton"><span class="defaultLightText">Pošalji poruku</span></button>
                         </div>
                     </div>
                 </div>
