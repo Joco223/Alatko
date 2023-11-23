@@ -68,11 +68,12 @@ export async function sendMessage(chat, sender, message) {
     await setDoc(chatRef, chat);
 }
 
-// Subscribe to a chat using db and push new messages to the chat
-export function subscribeToChat(chat) {
-    const chatRef = doc(db, "chats", chat.id).withConverter(chatConverter);
+// Subscribe to a chat using db and set chat.messages to chatSnapshot
+export function subscribeToChat(chat, updateMessages) {
+    const chatRef = doc(db, "chats", chat.id);
     const unsubscribe = onSnapshot(chatRef, (chatSnapshot) => {
-        const chat = chatSnapshot.data();
+        console.log(chatSnapshot.data());
+        updateMessages(chatSnapshot.data().messages);
     });
 
     return unsubscribe;

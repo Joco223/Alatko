@@ -23,6 +23,7 @@
     if (user) {
         chatController.loadChats(auth.currentUser).then((data) => {
             chats.value = data
+            console.log(data)
         });
         loggedIn.value = true
     } else {
@@ -34,8 +35,14 @@
         if (unsubscribe) {
             unsubscribe()
         }
+        console.log(chat)
         selectedChat.value = chat
-        unsubscribe = chatController.subscribeToChat(chat);
+        unsubscribe = chatController.subscribeToChat(chat, updateChatMessages);
+    }
+
+    const updateChatMessages = (messages) => {
+        console.log(messages)
+        selectedChat.value.messages = messages
     }
 
     // Send new message in a chat
