@@ -17,11 +17,11 @@
     const newMessage = ref('')
     const selectedChat = ref(null)
 
+    var unsubscribe = null
+
     onAuthStateChanged(auth, (user) => {
     if (user) {
-        console.log(user)
         chatController.loadChats(auth.currentUser).then((data) => {
-            console.log(data)
             chats.value = data
         });
         loggedIn.value = true
@@ -29,6 +29,14 @@
         loggedIn.value = false
     }
     });
+
+    const selectChat = (chat) => {
+        if (unsubscribe) {
+            unsubscribe()
+        }
+        selectedChat.value = chat
+        unsubscribe = chatController.subscribeToChat(chat);
+    }
 
     // Send new message in a chat
     // const sendMessage = async () => {
@@ -104,7 +112,7 @@
                 </div>
             </div>
             <div v-else>
-                <div v-for="chat in chats" :key="chat.id" @click="selectedChat = chat" :class="{ 'errorCardSmallPadding' : selectedChat == chat, 'cardSmallPadding' : selectedChat != chat}" class="mb-2 flex flex-col">
+                <div v-for="chat in chats" :key="chat.id" @click="selectChat(chat)" :class="{ 'errorCardSmallPadding' : selectedChat == chat, 'cardSmallPadding' : selectedChat != chat}" class="mb-2 flex flex-col">
                     <div class="defaultMediumHeader">
                         {{ chat.oglasNaziv }}
                     </div>
@@ -126,7 +134,7 @@
                 <span class="defaultText">Nije izabran razgovor</span>
             </div>
             <div v-else>
-                <div v-if="messages.length == 0" class="cardSmallPadding text-center">
+                <div v-if="selectedChat.messages.length == 0" class="cardSmallPadding text-center">
                     <span class="defaultText">Nemate poruke</span>
                 </div>
                 <div v-else v-for="message in selectedChat.messages" :key="message.id" class="cardSmallPadding flex flex-col mb-1">
@@ -138,7 +146,7 @@
                 </div>
                 <div class="cardSmallPadding flex flex-col mt-2">
                     <textarea v-model="newMessage" class="defaultInput" placeholder="Unesite poruku"></textarea>
-                    <button @click="sendMessageRT" class="defaultButton lg:w-1/4 lg:self-end mt-2 w-full"><span class="defaultLightText">Pošalji</span></button>
+                    <button @click="chatController.sendMessage(selectedChat, auth.currentUser, newMessage)" class="defaultButton lg:w-1/4 lg:self-end mt-2 w-full"><span class="defaultLightText">Pošalji</span></button>
                 </div>
             </div>
         </div>

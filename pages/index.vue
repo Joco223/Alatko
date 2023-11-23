@@ -187,41 +187,46 @@
     };
 
     //Create chat object in database
-    const createChat = async (oglasId, oglasNaziv, receiver, receiverId) => {
-        try {
-            const senderId = auth.currentUser.uid;
-            const querySnapshot = await getDocs(
-                query(
-                    collection(db, "chats"),
-                    where("senderId", "==", senderId),
-                    where("receiverId", "==", receiverId)
-                )
-            );
-            if (!querySnapshot.empty) {
-                // Chat between these two users already exists
-                navigateTo('/user/messages');
-                return;
-            }
+    // const createChat = async (oglasId, oglasNaziv, receiver, receiverId) => {
+    //     try {
+    //         const senderId = auth.currentUser.uid;
+    //         const querySnapshot = await getDocs(
+    //             query(
+    //                 collection(db, "chats"),
+    //                 where("senderId", "==", senderId),
+    //                 where("receiverId", "==", receiverId)
+    //             )
+    //         );
+    //         if (!querySnapshot.empty) {
+    //             // Chat between these two users already exists
+    //             navigateTo('/user/messages');
+    //             return;
+    //         }
 
-            const id = uuidv4();
-            const docRef = doc(db, "chats", id);
-            const docData = {
-                chatId: id,
-                oglasId: oglasId,
-                oglasNaziv: oglasNaziv,
-                sender: auth.currentUser.displayName,
-                senderId: senderId,
-                receiver: receiver,
-                receiverId: receiverId,
-                lastMessage: '',
-                lastMessageDate: ''
-            };
-            await setDoc(docRef, docData);
-            navigateTo('/user/messages');
-        } catch (error) {
-            errorMsg.value = error.message;
-        }
-    };
+    //         const id = uuidv4();
+    //         const docRef = doc(db, "chats", id);
+    //         const docData = {
+    //             chatId: id,
+    //             oglasId: oglasId,
+    //             oglasNaziv: oglasNaziv,
+    //             sender: auth.currentUser.displayName,
+    //             senderId: senderId,
+    //             receiver: receiver,
+    //             receiverId: receiverId,
+    //             lastMessage: '',
+    //             lastMessageDate: ''
+    //         };
+    //         await setDoc(docRef, docData);
+    //         navigateTo('/user/messages');
+    //     } catch (error) {
+    //         errorMsg.value = error.message;
+    //     }
+    // };
+
+    const createChat = async(oglas) => {
+        chatController.createChat(auth.currentUser.uid, oglas.user, oglas);
+        navigateTo('/user/messages');
+    }
 
 </script>
 
@@ -314,7 +319,7 @@
                         </div>
                         <div class="w-full mt-2 flex justify-between">
                             <span class="defaultItalicText">{{ oglas.userNaziv }} - Postavljeno {{ getDateFormatted(oglas.creationTime) }}</span>
-                            <button @click="chatController.createChat(auth.currentUser, auth.currentUser, oglas)" class="defaultButton"><span class="defaultLightText">Pošalji poruku</span></button>
+                            <button @click="createChat(oglas)" class="defaultButton"><span class="defaultLightText">Pošalji poruku</span></button>
                         </div>
                     </div>
                 </div>

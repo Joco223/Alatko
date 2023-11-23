@@ -7,16 +7,37 @@ import { Message, messageConverter } from "../models/messageModel.js";
 // Create a new chat with two user ids using db
 
 export async function createChat(user1, user2, oglas) {
+    // Check if chat with both recipients already exists
+    const existingChat = await findExistingChat(user1, user2);
+    if (existingChat) {
+        return existingChat.id;
+    }
+    
     const chatId = uuidv4();
     const chatRef = doc(db, "chats", chatId).withConverter(chatConverter);
 
-    const chat = new Chat(chatId, [user1.uid, user2.uid], oglas.oglasId);
+    const chat = new Chat(chatId, [user1, user2], oglas.oglasId);
 
     console.log(chat);
 
     await setDoc(chatRef, chat);
 
     return chatId;
+}
+
+// Find existing chat with both recipients
+async function findExistingChat(user1Id, user2Id) {
+    const chatsRef = collection(db, 'chats');
+    const snapshot = await getDocs(chatsRef);
+
+    for (const doc of snapshot.docs) {
+        const chat = doc.data();
+        if (chat.users.includes(user1Id) && chat.users.includes(user2Id)) {
+            return { id: doc.id, ...chat };
+        }
+    }
+
+    return null;
 }
 
 // Load all chats for a user from db
@@ -37,23 +58,21 @@ export async function loadChats(user) {
 
 // Send a new message to a chat using db and push with sender user object, message and timestamp
 export async function sendMessage(chat, sender, message) {
-    const newMessage = new Message(sender, message);
+    const chatRef = doc(db, "chats", chat.id).withConverter(chatConverter);
+    const newMessage = new Message(sender.uid, message);
 
-    const messages = chat.messages ? chat.messages : [];
+    console.log(newMessage)
 
-    messages.push(newMessage);
-    chat.messages = messages;
+    chat.messages.push(newMessage);
 
     await setDoc(chatRef, chat);
 }
 
 // Subscribe to a chat using db and push new messages to the chat
-export function subscribeToChat(chat, onSubscribe) {
-    const chatRef = doc(db, "chats", chat.id);
+export function subscribeToChat(chat) {
+    const chatRef = doc(db, "chats", chat.id).withConverter(chatConverter);
     const unsubscribe = onSnapshot(chatRef, (chatSnapshot) => {
         const chat = chatSnapshot.data();
-        const messages = chat.messages ? chat.messages : [];
-        onSubscribe(messages);
     });
 
     return unsubscribe;

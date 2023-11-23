@@ -19,7 +19,7 @@ const messageConverter = {
         };
     },
     fromFirestore: function (snapshot, options) {
-        const data = snapshot.data(options);
+        const data = snapshot;
         return new Message(data.sender, data.text, data.timestamp);
     }
 };
