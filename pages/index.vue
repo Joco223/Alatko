@@ -241,6 +241,9 @@
                 <div class="flex flex-col">
                     <span class="defaultMediumHeader mb-1">{{ pageUser?.displayName }}</span>
                     <span class="defaultText textOverflow lg:text-xs">{{ pageUser?.email }}</span>
+                    <NuxtLink to="/user/messages" v-if="loggedIn" class="w-full">
+                        <button class="defaultButton w-full mt-2"><span class="defaultLightText">Poruke</span></button>
+                    </NuxtLink>
                 </div>
                 <NuxtLink to="/user/newOglas" v-if="loggedIn" class="w-full">
                     <button class="confirmButton w-full"><span class="defaultLightGreenText">Novi oglas</span></button>
@@ -253,6 +256,7 @@
                 </NuxtLink>
                 <button @click="logOut" v-if="loggedIn" class="defaultButton w-full"><span class="defaultLightText">Log out</span></button>
             </div>
+            
         </div>
         <div v-else class="cardSmallPadding lg:h-1/3 col-span-1 order-first lg:order-2">
             <h3 class="defaultHeader mb-2">Niste ulogovani</h3>
